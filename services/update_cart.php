@@ -1,6 +1,11 @@
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script>
     function updateQuantity(productId, change) {
+        var updateButton = $(".btn");
+        
+        // Disable the button to prevent multiple clicks
+        updateButton.prop("disabled", true);
+
         var currentQuantity = parseInt($("#quantity" + productId).text());
         var newQuantity = currentQuantity + change;
 
@@ -8,6 +13,7 @@
         if (newQuantity < 0) {
             newQuantity = 0;
         }
+
         // Call AJAX function to update quantity in the database
         $.post('process_cart', { id: productId, quantity: newQuantity}, function(response) {
             // Handle the response if needed
@@ -22,14 +28,22 @@
                     orderTotal = parseInt($("#orderTotal").text()) + totalPriceChange;
                     $("#orderTotal").text(orderTotal);
                 }
-            } else if(typeof(response['message']) === 'undefined') {
+            } else if (typeof(response['message']) === 'undefined') {
                 location.reload();
             } else {
                 $("#error").text(response['message']).addClass("alert-danger");
             }
+
+            // Enable the button after the request is complete
+            updateButton.prop("disabled", false);
+
         }).fail(function(jqXHR, textStatus, errorThrown) {
             // Handle the case when the POST request fails
             $("#error").text('Error: ' + textStatus + ' - ' + errorThrown).addClass("alert-danger");
+
+            // Enable the button in case of failure
+            updateButton.prop("disabled", false);
+            location.reload();
         });
     }
 
